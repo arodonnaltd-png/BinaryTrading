@@ -2,11 +2,6 @@
   "buildCommand": "echo 'Static site with serverless API'",
   "outputDirectory": ".",
   "cleanUrls": false,
-  "functions": {
-    "api/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "routes": [
     {
       "src": "/api/(.*)",
