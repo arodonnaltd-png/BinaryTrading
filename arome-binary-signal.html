@@ -2068,8 +2068,7 @@ Respond ONLY raw JSON:
       let responseText = '';
       
       try {
-        const aiProvider = aiK.provider; // Will be determined by which env var exists
-        responseText = await fetchAICompletionViaProxy(prompt, aiProvider);
+        responseText = await fetchAICompletionViaProxy(prompt, null);
       } catch(err) {
         throw new Error(`AI API failed: ${err.message} — falling back to Turbo Mode`);
       }
