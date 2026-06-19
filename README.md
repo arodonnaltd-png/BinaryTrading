@@ -1,93 +1,188 @@
-# arodonnaltd-png-project
+# Arome Binary Signal — Forex Trading Terminal
 
+A professional **real-time forex trading signal generator** with live chart data, multi-AI support, advanced risk management, and Vercel deployment ready.
 
+## Features
 
-## Getting started
+✨ **Core Trading Engine**
+- Real-time OHLCV candle data via Twelve Data API
+- Professional technical indicators: RSI, EMA, MACD, Bollinger Bands, Stochastic, ATR
+- Candlestick pattern recognition (Doji, Hammer, Engulfing, etc.)
+- Multi-timeframe analysis (1m, 5m, 15m, 1h, 4h)
+- Market regime detection (Trending/Ranging/Volatile)
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+🤖 **AI Signal Generation** (choose one)
+- **Groq** (recommended: fastest, most generous free tier)
+- **Google Gemini** (free, 1500 req/day)
+- **Anthropic Claude** ($5 free credits)
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+⚡ **Advanced Features**
+- **Turbo Mode**: Pure technical analysis without AI
+- **Weighted Indicator Scoring**: RSI 30%, MACD 25%, EMA 20%, BB 15%, Stoch 10%
+- **Backtesting Module**: Win rate, max drawdown, Sharpe ratio
+- **Dynamic Risk Management**: Stop-loss/take-profit based on ATR
+- **Real-Time Signal Tracking**: Execution accuracy per timeframe
+- **Telegram Alerts**: Real-time notifications
+- **Signal Accuracy Report**: Historical performance analytics
 
-## Add your files
+## Getting Started (Local)
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+1. **Download the project:**
+   ```bash
+   git clone https://github.com/arodonnaltd-png/BinaryTrading.git
+   cd BinaryTrading
+   ```
 
+2. **Open in browser:**
+   ```bash
+   open arome-binary-signal.html
+   ```
+
+3. **Get API keys** (free):
+   - [Twelve Data](https://twelvedata.com) — chart/candle data (800 req/day)
+   - One AI key:
+     - [Groq](https://console.groq.com)
+     - [Gemini](https://aistudio.google.com)
+     - [Anthropic](https://console.anthropic.com)
+   - (Optional) [Telegram Bot Token](https://t.me/BotFather) for alerts
+
+4. **Click ⚙ API Keys** and paste your keys, then **Save**.
+
+5. **Select asset → timeframe → Click ⚡ Generate Signals**
+
+## Deploy to Vercel
+
+### Step 1: Link GitHub to Vercel
+
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+2. Click **Add New… → Project**
+3. Choose **Import Git Repository** → **GitHub**
+4. Find `arodonnaltd-png/BinaryTrading` and click **Import**
+
+### Step 2: Configure Project
+
+On the configuration screen:
+
+- **Framework Preset:** "Other" (static site + serverless)
+- **Root Directory:** `./` (repo root)
+- **Build Command:** leave default (no build needed)
+- **Output Directory:** leave default
+
+### Step 3: Set Environment Variables
+
+Before deploying, add environment variables in **Project → Settings → Environment Variables**.
+
+Add each as a separate entry (Name + Value), select all environments (Production/Preview/Development):
+
+| Name | Required? | Where to Get |
+|------|-----------|--------------|
+| `TWELVEDATA_API_KEY` | **Yes** (charts won't work without it) | [twelvedata.com](https://twelvedata.com) |
+| `GROQ_API_KEY` | One AI key required | [console.groq.com](https://console.groq.com) |
+| `GEMINI_API_KEY` | …or this one | [aistudio.google.com](https://aistudio.google.com) |
+| `ANTHROPIC_API_KEY` | …or this one | [console.anthropic.com](https://console.anthropic.com) |
+| `TELEGRAM_BOT_TOKEN` | Optional (alerts only) | Telegram [@BotFather](https://t.me/BotFather) |
+| `TELEGRAM_CHAT_ID` | Optional (alerts only) | Your Telegram chat ID |
+
+**Note:** You only need **one** of the three AI keys. Pick the provider you prefer.
+
+### Step 4: Deploy
+
+1. Click **Deploy**
+2. Vercel builds and deploys automatically
+3. You'll get a live URL like `https://binarytrading.vercel.app`
+
+Every push/merge to `main` auto-deploys. Other branches get preview URLs.
+
+### Step 5: Verification
+
+After deployment:
+
+- ✅ Open your Vercel URL — chart should load (confirms `TWELVEDATA_API_KEY` works)
+- ✅ Click **⚡ Generate Signals** — AI signals appear (confirms AI key works)
+- ✅ Status bar shows "Chart: ✓" and "AI: ✓"
+
+If the chart shows an error, check that env vars were set before deploy. If missing, add them and click **Redeploy**.
+
+## Local Development
+
+### Requirements
+- Modern browser (Chrome, Firefox, Safari, Edge)
+- No build step needed
+- Works offline with cached data (if API keys are stored locally)
+
+### File Structure
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/arodonnaltd-png-group/arodonnaltd-png-project.git
-git branch -M main
-git push -uf origin main
+BinaryTrading/
+├── arome-binary-signal.html  (main app, no build needed)
+└── README.md
 ```
 
-## Integrate with your tools
+### How It Works
 
-* [Set up project integrations](https://gitlab.com/arodonnaltd-png-group/arodonnaltd-png-project/-/settings/integrations)
+1. **Charts:** Fetches OHLCV from Twelve Data API
+2. **Analysis:** Calculates 6+ technical indicators in real-time
+3. **AI:** Sends indicator data + price action to your chosen AI (Groq/Gemini/Claude)
+4. **Signals:** AI returns BUY/SELL/NEUTRAL with timeframes & confidence
+5. **Tracking:** Monitors signal execution in real-time, records accuracy
 
-## Collaborate with your team
+## Indicators & Methodology
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+### Technical Indicators
+- **RSI(14):** Momentum (oversold/overbought)
+- **EMA(9, 21, 50):** Trend direction & crossovers
+- **MACD(12, 26, 9):** Momentum & divergence
+- **Bollinger Bands(20):** Volatility & support/resistance
+- **Stochastic(14, 3):** Momentum confirmation
+- **ATR(14):** Volatility & dynamic risk sizing
+- **Support/Resistance:** 50-candle lookback
+- **Candlestick Patterns:** Doji, Hammer, Engulfing, etc.
 
-## Test and Deploy
+### Confidence Scoring (41–94%)
+- Weighted sum of indicator signals
+- Adjusted for market regime
+- Sanity checks for conflicting signals
+- Confidence only valid 41–94 (no round numbers)
 
-Use the built-in continuous integration in GitLab.
+### Market Regimes
+- **TRENDING_UP:** Strong uptrend (use BUY bias)
+- **TRENDING_DOWN:** Strong downtrend (use SELL bias)
+- **RANGING:** No trend (favor reversals)
+- **VOLATILE:** High volatility (lower confidence)
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+## Tips for Best Results
 
-***
+1. **Start with Groq** — it's the fastest and most reliable free option
+2. **Use Turbo Mode** during high API latency or when AI isn't available
+3. **Multi-timeframe confluence** = higher confidence. Look for signals across 1m, 5m, 15m
+4. **Risk management is key** — always set stop-loss/take-profit before entering
+5. **Backtest first** — use ⚡ Advanced → Backtesting to validate on historical data
+6. **Export signal history** — track accuracy and refine strategy over time
 
-# Editing this README
+## Troubleshooting
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+### Chart won't load
+- Check `TWELVEDATA_API_KEY` in ⚙ API Keys
+- Verify it's the correct key from twelvedata.com
+- If still blank, redeploy on Vercel (env vars may not have taken effect)
 
-## Suggestions for a good README
+### Signals don't appear
+- Ensure one AI key is set (⚙ API Keys)
+- Select Turbo Mode (⚡ Advanced) to skip AI dependency
+- Check browser console for errors (F12)
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+### Telegram alerts not working
+- Verify bot token and chat ID are correct
+- Check Telegram bot is active (@BotFather)
 
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+### Deployment issues
+- Redeploy after adding env vars
+- Check Vercel build logs for errors
+- Ensure no build step is set (this is a static file app)
 
 ## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+MIT
+
+## Support & Feedback
+
+For issues, suggestions, or PRs: [GitHub Issues](https://github.com/arodonnaltd-png/BinaryTrading/issues)
