@@ -1296,12 +1296,10 @@ async function sendTelegramAlert(message){
 
 /* ── STATUS BAR ── */
 function updateStatusBar(){
-  const k = loadKeys();
   const chartEl  = document.getElementById('sb-chart');
   const aiEl     = document.getElementById('sb-ai');
-  chartEl.innerHTML  = 'Chart: ' + (k.twelvedata ? '<span class="sb-ok">Twelve Data ✓</span>' : '<span class="sb-warn">No key — enter in ⚙</span>');
-  const aiK = getActiveAIKey();
-  aiEl.innerHTML = 'AI: ' + (aiK ? `<span class="sb-ok">${aiK.provider} ✓</span>` : '<span class="sb-warn">No AI key — enter in ⚙</span>');
+  chartEl.innerHTML  = 'Chart: <span class="sb-ok">Twelve Data ✓</span>';
+  aiEl.innerHTML = 'AI: <span class="sb-ok">Server-configured ✓</span>';
 }
 updateStatusBar();
 
@@ -2012,16 +2010,7 @@ async function runAnalysis(){
       body.innerHTML = `<div class="loading-center"><div class="spin-ring"></div><div class="loading-lbl">Turbo mode analysis…</div></div>`;
       p = generateTurboSignals(ind, marketRegime);
     } else {
-      // AI-based analysis with multi-timeframe confirmation
-      const aiK = getActiveAIKey();
-      if(!aiK){
-        alert('Turbo Mode is disabled. Please enter an AI API key in ⚙ API Keys.\n\nOr enable Turbo Mode in ⚡ Advanced for pure technical analysis.');
-        openSettings();
-        btn.disabled = false;
-        return;
-      }
-
-      // Multi-timeframe analysis (optional, for confluence)
+      // AI-based analysis with multi-timeframe confirmation (uses server-side proxy)
       body.innerHTML = `<div class="loading-center"><div class="spin-ring"></div><div class="loading-lbl">Analyzing multi-timeframe confluence…</div></div>`;
       const mtfAnalysis = await analyzeMultiTimeframe(currentAsset, candles, currentTf);
       
