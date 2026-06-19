@@ -3,10 +3,17 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   
-  const { message, chatId } = req.body;
+  const { message, text, chatId } = req.body;
+  const msgText = text || message;
   
-  if (!message || !chatId) {
-    return res.status(400).json({ error: 'Missing message or chatId' });
+  if (!msgText) {
+    return res.status(400).json({ error: 'Missing message/text' });
+  }
+  
+  // Use provided chatId or fall back to environment variable
+  const finalChatId = chatId || process.env.TELEGRAM_CHAT_ID;
+  if (!finalChatId) {
+    return res.status(400).json({ error: 'Missing chatId' });
   }
   
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -20,8 +27,8 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
+        chat_id: finalChatId,
+        text: msgText,
         parse_mode: 'HTML'
       })
     });

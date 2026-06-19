@@ -38,7 +38,7 @@ A professional **real-time forex trading signal generator** with live chart data
    open arome-binary-signal.html
    ```
 
-3. **Get API keys** (free):
+3. **Get API keys** (free, only needed for local testing):
    - [Twelve Data](https://twelvedata.com) — chart/candle data (800 req/day)
    - One AI key:
      - [Groq](https://console.groq.com)
@@ -46,11 +46,22 @@ A professional **real-time forex trading signal generator** with live chart data
      - [Anthropic](https://console.anthropic.com)
    - (Optional) [Telegram Bot Token](https://t.me/BotFather) for alerts
 
-4. **Click ⚙ API Keys** and paste your keys, then **Save**.
+4. **Click ⚙ API Keys** and paste your keys, then **Save**. (local storage only)
 
 5. **Select asset → timeframe → Click ⚡ Generate Signals**
 
+**Note:** On Vercel, you don't need to enter API keys in the UI — they're stored as environment variables server-side. The app calls `/api/...` proxies automatically.
+
 ## Deploy to Vercel
+
+### Architecture
+
+This project uses a **hybrid approach**:
+- **Frontend:** Static HTML with real-time indicator analysis (client-side)
+- **Backend:** Serverless API proxies (`/api/twelvedata.js`, `/api/ai.js`, `/api/telegram.js`) that hold all secret API keys server-side
+- **Keys:** Stored securely as **Vercel Environment Variables** (not in frontend code)
+
+This keeps your API keys private while allowing the frontend to call proxies via same-origin requests (no CORS issues).
 
 ### Step 1: Link GitHub to Vercel
 
@@ -65,10 +76,10 @@ On the configuration screen:
 
 - **Framework Preset:** "Other" (static site + serverless)
 - **Root Directory:** `./` (repo root)
-- **Build Command:** leave default (no build needed)
+- **Build Command:** leave default
 - **Output Directory:** leave default
 
-### Step 3: Set Environment Variables
+### Step 3: Set Environment Variables (Server-Side)
 
 Before deploying, add environment variables in **Project → Settings → Environment Variables**.
 
@@ -76,20 +87,19 @@ Add each as a separate entry (Name + Value), select all environments (Production
 
 | Name | Required? | Where to Get |
 |------|-----------|--------------|
-| `TWELVEDATA_API_KEY` | **Yes** (charts won't work without it) | [twelvedata.com](https://twelvedata.com) |
+| `TWELVEDATA_API_KEY` | **Yes** (chart data) | [twelvedata.com](https://twelvedata.com) |
 | `GROQ_API_KEY` | One AI key required | [console.groq.com](https://console.groq.com) |
 | `GEMINI_API_KEY` | …or this one | [aistudio.google.com](https://aistudio.google.com) |
 | `ANTHROPIC_API_KEY` | …or this one | [console.anthropic.com](https://console.anthropic.com) |
 | `TELEGRAM_BOT_TOKEN` | Optional (alerts only) | Telegram [@BotFather](https://t.me/BotFather) |
-| `TELEGRAM_CHAT_ID` | Optional (alerts only) | Your Telegram chat ID |
 
-**Note:** You only need **one** of the three AI keys. Pick the provider you prefer.
+**Key difference:** You only add these to Vercel Settings, NOT in the app UI. The app calls `/api/...` endpoints that use these env vars server-side.
 
 ### Step 4: Deploy
 
 1. Click **Deploy**
 2. Vercel builds and deploys automatically
-3. You'll get a live URL like `https://binarytrading.vercel.app`
+3. You'll get a live URL like `https://your-app.vercel.app`
 
 Every push/merge to `main` auto-deploys. Other branches get preview URLs.
 
@@ -97,11 +107,19 @@ Every push/merge to `main` auto-deploys. Other branches get preview URLs.
 
 After deployment:
 
-- ✅ Open your Vercel URL — chart should load (confirms `TWELVEDATA_API_KEY` works)
-- ✅ Click **⚡ Generate Signals** — AI signals appear (confirms AI key works)
-- ✅ Status bar shows "Chart: ✓" and "AI: ✓"
+- ✅ Open your Vercel URL — chart should load (confirms `/api/twelvedata` works)
+- ✅ Select asset → timeframe → Click **⚡ Generate Signals** — AI signals appear (confirms `/api/ai` works)
+- ✅ Status bar shows "Chart: Proxy ✓" and "AI: (server) ✓"
 
-If the chart shows an error, check that env vars were set before deploy. If missing, add them and click **Redeploy**.
+If charts show an error, check that `TWELVEDATA_API_KEY` is set in Vercel Settings. If missing, add it and click **Redeploy**.
+
+### Why Server-Side Proxies?
+
+1. **Security:** API keys never leave your Vercel servers or appear in frontend code
+2. **Rate limiting:** Centralized control over API request throttling
+3. **Cost control:** Monitor and limit API spend from one place
+4. **Privacy:** Users don't see your keys; they just use the app
+5. **No CORS issues:** Frontend and `/api` are same-origin on Vercel
 
 ## Local Development
 
@@ -113,17 +131,32 @@ If the chart shows an error, check that env vars were set before deploy. If miss
 ### File Structure
 ```
 BinaryTrading/
-├── arome-binary-signal.html  (main app, no build needed)
+├── arome-binary-signal.html      (main frontend app)
+├── api/
+│   ├── twelvedata.js              (Vercel proxy → Twelve Data API)
+│   ├── ai.js                      (Vercel proxy → Groq/Gemini/Anthropic)
+│   └── telegram.js                (Vercel proxy → Telegram Bot API)
+├── vercel.json                    (Vercel routing + serverless config)
+├── package.json                   (Node.js runtime config)
 └── README.md
 ```
 
 ### How It Works
 
-1. **Charts:** Fetches OHLCV from Twelve Data API
-2. **Analysis:** Calculates 6+ technical indicators in real-time
-3. **AI:** Sends indicator data + price action to your chosen AI (Groq/Gemini/Claude)
-4. **Signals:** AI returns BUY/SELL/NEUTRAL with timeframes & confidence
-5. **Tracking:** Monitors signal execution in real-time, records accuracy
+**On Vercel (production):**
+1. **Frontend** → calls `/api/twelvedata` (same-origin)
+2. **Proxy** → uses env var `TWELVEDATA_API_KEY` → fetches from Twelve Data
+3. **Frontend** ← gets candle data
+4. **Analysis:** Calculates 6+ technical indicators in real-time
+5. **Frontend** → calls `/api/ai` with prompt
+6. **Proxy** → uses env var (`GROQ_API_KEY`, etc.) → calls your chosen AI
+7. **Signals:** AI returns BUY/SELL/NEUTRAL with timeframes & confidence
+8. **Frontend** → optionally calls `/api/telegram` to send alerts
+9. **Tracking:** Monitors signal execution in real-time, records accuracy
+
+**Locally (development):**
+Simply open `arome-binary-signal.html` in a browser and use client-side key storage (no proxies needed).
+On Vercel, the API keys are hidden server-side via the proxies.
 
 ## Indicators & Methodology
 

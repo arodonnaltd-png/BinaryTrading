@@ -1203,12 +1203,6 @@ function saveImprovementSettings(){
 }
 
 async function runBacktestAnalysis(){
-  const k = loadKeys();
-  if(!k.twelvedata){
-    alert('Please enter your Twelve Data API key first.');
-    return;
-  }
-  
   const resultsDiv = document.getElementById('backtestResults');
   resultsDiv.style.display = 'block';
   resultsDiv.innerHTML = '<span style="color:var(--gold);">Fetching historical data...</span>';
@@ -1216,9 +1210,9 @@ async function runBacktestAnalysis(){
   try {
     const intervalMap = {'1':'1min','5':'5min','15':'15min','60':'1h','240':'4h'};
     const interval = intervalMap[currentTf] || '1min';
-    const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(currentAsset.tdSym)}&interval=${interval}&outputsize=300&apikey=${k.twelvedata}`;
+    const params = new URLSearchParams({ symbol: currentAsset.tdSym, interval, outputsize: 300 });
     
-    const res = await fetchWithRetry(url);
+    const res = await fetchWithRetry(`/api/twelvedata?${params}`);
     const data = await res.json();
     
     if(data.error) throw new Error(data.message);
@@ -1284,17 +1278,15 @@ function exportBacktestResults(){
 
 async function sendTelegramAlert(message){
   const settings = loadImprovementSettings();
-  if(!settings.telegramToken || !settings.telegramChatId) return;
+  if(!settings.telegramChatId) return;
   
   try {
-    const url = `https://api.telegram.org/bot${settings.telegramToken}/sendMessage`;
-    await fetch(url, {
+    await fetchWithRetry('/api/telegram', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        chat_id: settings.telegramChatId,
-        text: message,
-        parse_mode: 'HTML'
+        chatId: settings.telegramChatId,
+        text: message
       })
     });
   } catch(err) {
@@ -1588,9 +1580,6 @@ function getRiskBasedLotSize(entryPrice, stopLoss, accountBalance, riskPercent) 
 
 /* ─ 4. MULTI-TIMEFRAME CONFLUENCE ─ */
 async function analyzeMultiTimeframe(asset, baseCandles, baseTf) {
-  const k = loadKeys();
-  if(!k.twelvedata) return null;
-  
   try {
     const timeframes = ['1', '5', '15'];
     const results = { [baseTf]: analyzeCandles(baseCandles) };
@@ -1598,9 +1587,9 @@ async function analyzeMultiTimeframe(asset, baseCandles, baseTf) {
     for(const tf of timeframes) {
       if(tf === baseTf) continue;
       const intervalMap = {'1':'1min','5':'5min','15':'15min','60':'1h','240':'4h'};
-      const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(asset.tdSym)}&interval=${intervalMap[tf]}&outputsize=100&apikey=${k.twelvedata}`;
+      const params = new URLSearchParams({ symbol: asset.tdSym, interval: intervalMap[tf], outputsize: 100 });
       
-      const res = await fetchWithRetry(url);
+      const res = await fetchWithRetry(`/api/twelvedata?${params}`);
       const data = await res.json();
       // Rate limit: add 500ms delay between API calls
       await new Promise(r => setTimeout(r, 500));
@@ -1975,13 +1964,6 @@ function dirClass(d) { return d==='BUY'?'dp-buy':d==='SELL'?'dp-sell':'dp-neu'; 
 
 /* ── MAIN ANALYSIS ENGINE ── */
 async function runAnalysis(){
-  const k = loadKeys();
-  if(!k.twelvedata){
-    alert('Please enter your Twelve Data API key in ⚙ API Keys to enable real market data.');
-    openSettings();
-    return;
-  }
-
   const btn  = document.getElementById('analyzeBtn');
   const body = document.getElementById('spBody');
   btn.disabled = true;
@@ -2254,16 +2236,13 @@ function startSignalMonitoring(currentPrice, asset) {
 
   // Check signals every 2 seconds
   monitoringInterval = setInterval(async () => {
-    const k = loadKeys();
-    if(!k.twelvedata) return;
-
     try {
       // Get current price
       const intervalMap = {'1':'1min','5':'5min','15':'15min','60':'1h','240':'4h'};
       const interval = intervalMap[currentTf] || '1min';
-      const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(asset.tdSym)}&interval=${interval}&outputsize=5&apikey=${k.twelvedata}`;
+      const params = new URLSearchParams({ symbol: asset.tdSym, interval, outputsize: 5 });
       
-      const res = await fetchWithRetry(url);
+      const res = await fetchWithRetry(`/api/twelvedata?${params}`);
       const data = await res.json();
       
       if(data.values && data.values.length > 0) {
