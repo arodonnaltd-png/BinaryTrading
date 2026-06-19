@@ -1,14 +1,18 @@
 {
-  "buildCommand": "echo 'Static site, no build needed'",
+  "buildCommand": "echo 'Static site with serverless API'",
   "outputDirectory": ".",
   "cleanUrls": false,
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/arome-binary-signal.html"
+  "functions": {
+    "api/*.js": {
+      "runtime": "nodejs18.x"
     }
-  ],
+  },
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1",
+      "methods": ["GET", "POST", "OPTIONS"]
+    },
     {
       "src": "/(.*)",
       "dest": "/arome-binary-signal.html"

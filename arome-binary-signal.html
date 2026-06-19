@@ -1800,6 +1800,36 @@ async function fetchWithRetry(url, options = {}, maxRetries = 3) {
   }
 }
 
+/* ─ SERVERLESS API PROXY CALLS ─ */
+async function fetchTimeSeriesViaProxy(symbol, interval, outputsize = 200) {
+  const params = new URLSearchParams({ symbol, interval, outputsize });
+  const res = await fetchWithRetry(`/api/twelvedata?${params}`);
+  return res.json();
+}
+
+async function fetchAICompletionViaProxy(prompt, provider) {
+  const res = await fetchWithRetry('/api/ai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, provider })
+  });
+  const data = await res.json();
+  return data.content;
+}
+
+async function sendTelegramViaProxy(message, chatId) {
+  if (!chatId) return;
+  try {
+    await fetchWithRetry('/api/telegram', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, chatId })
+    });
+  } catch(err) {
+    console.warn('Telegram via proxy failed:', err);
+  }
+}
+
 /* ── FULL INDICATOR ANALYSIS ── */
 function analyzeCandles(candles) {
   const closes = candles.map(c=>c.close);
@@ -1892,20 +1922,18 @@ function initChart(){
 /* ── LOAD CHART + RETURN CANDLES ── */
 async function loadChart() {
   const k = loadKeys();
-  if(!k.twelvedata){
-    document.getElementById('chartPlaceholder').style.display='flex';
-    return null;
+  if(!k.twelvedata && typeof window !== 'undefined' && window.location.hostname !== 'localhost'){
+    // On Vercel, we use the proxy, so we don't need client-side keys
   }
+  
   document.getElementById('chartPlaceholder').style.display='none';
   initChart();
 
   const intervalMap = {'1':'1min','5':'5min','15':'15min','60':'1h','240':'4h'};
   const interval = intervalMap[currentTf] || '1min';
-  const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(currentAsset.tdSym)}&interval=${interval}&outputsize=200&apikey=${k.twelvedata}`;
 
   try {
-    const res  = await fetchWithRetry(url);
-    const data = await res.json();
+    const data = await fetchTimeSeriesViaProxy(currentAsset.tdSym, interval, 200);
     if(data.status === 'error') throw new Error(data.message);
     if(!data.values || !data.values.length) throw new Error('No data returned');
 
@@ -1965,12 +1993,10 @@ async function runAnalysis(){
     
     const intervalMap = {'1':'1min','5':'5min','15':'15min','60':'1h','240':'4h'};
     const interval = intervalMap[currentTf] || '1min';
-    const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(currentAsset.tdSym)}&interval=${interval}&outputsize=200&apikey=${k.twelvedata}`;
     
     let candles = null;
     try {
-      const res = await fetchWithRetry(url);
-      const data = await res.json();
+      const data = await fetchTimeSeriesViaProxy(currentAsset.tdSym, interval, 200);
       if(data.status === 'error') throw new Error(data.message);
       if(!data.values || !data.values.length) throw new Error('No data returned');
       
@@ -1982,7 +2008,7 @@ async function runAnalysis(){
         close: parseFloat(v.close),
       }));
     } catch(err) {
-      throw new Error(`API Error: ${err.message} — check your Twelve Data key`);
+      throw new Error(`API Error: ${err.message}`);
     }
     
     if(!candles || candles.length < 60) {
@@ -2071,41 +2097,8 @@ Respond ONLY raw JSON:
       let responseText = '';
       
       try {
-        if(aiK.provider === 'groq'){
-          const res = await fetchWithRetry('https://api.groq.com/openai/v1/chat/completions', {
-            method:'POST',
-            headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+aiK.key },
-            body: JSON.stringify({ model:'llama-3.3-70b-versatile', messages:[{role:'user',content:prompt}], max_tokens:800, temperature:0.3 })
-          });
-          const d = await res.json();
-          if(d.error) throw new Error(d.error.message);
-          responseText = d.choices[0].message.content;
-
-        } else if(aiK.provider === 'gemini'){
-          const res = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${aiK.key}`, {
-            method:'POST',
-            headers:{ 'Content-Type':'application/json' },
-            body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:800,temperature:0.3} })
-          });
-          const d = await res.json();
-          if(d.error) throw new Error(JSON.stringify(d.error));
-          responseText = d.candidates[0].content.parts[0].text;
-
-        } else if(aiK.provider === 'anthropic'){
-          const res = await fetchWithRetry('https://api.anthropic.com/v1/messages', {
-            method:'POST',
-            headers:{
-              'Content-Type':'application/json',
-              'x-api-key': aiK.key,
-              'anthropic-version':'2023-06-01',
-              'anthropic-dangerous-direct-browser-access':'true'
-            },
-            body: JSON.stringify({ model:'claude-haiku-4-5', max_tokens:800, messages:[{role:'user',content:prompt}] })
-          });
-          const d = await res.json();
-          if(d.error) throw new Error(d.error.message);
-          responseText = d.content.map(b=>b.text||'').join('');
-        }
+        const aiProvider = aiK.provider; // Will be determined by which env var exists
+        responseText = await fetchAICompletionViaProxy(prompt, aiProvider);
       } catch(err) {
         throw new Error(`AI API failed: ${err.message} — falling back to Turbo Mode`);
       }
@@ -2232,7 +2225,10 @@ Respond ONLY raw JSON:
 
     // Send Telegram alert if enabled
     if(overall !== 'NEUTRAL') {
-      await sendTelegramAlert(`<b>${currentAsset.sym}</b> ${overall} Signal\n💡 Confidence: ${Math.max(...p.signals.map(s=>s.confidence))}%\n🎯 Regime: ${marketRegime.regime}`);
+      const settings = loadImprovementSettings();
+      if(settings.telegramChatId) {
+        await sendTelegramViaProxy(`<b>${currentAsset.sym}</b> ${overall} Signal\n💡 Confidence: ${Math.max(...p.signals.map(s=>s.confidence))}%\n🎯 Regime: ${marketRegime.regime}`, settings.telegramChatId);
+      }
     }
 
     // Start real-time monitoring of signal execution

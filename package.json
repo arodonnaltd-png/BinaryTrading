@@ -1,0 +1,9 @@
+{
+  "name": "arome-binary-signal",
+  "version": "1.0.0",
+  "description": "Professional forex trading signal generator with Vercel serverless API",
+  "private": true,
+  "engines": {
+    "node": "18.x"
+  }
+}
