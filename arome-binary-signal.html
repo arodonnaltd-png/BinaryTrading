@@ -952,7 +952,7 @@ const userSettings = { rsiPeriod:14, emaPeriods:[9,21,50], macdFast:12, macdSlow
 // ═════════════════════════════════════════════════
 const signalHistory = []; // Track all signals & their execution
 const signalTrackerKey = 'arome_signal_tracker';
-const timeframeMs = { '30 sec': 30000, '1 min': 60000, '2 min': 120000, '5 min': 300000 };
+const timeframeMs = { '30 sec': 30000, '1 min': 60000, '2 min': 120000, '5 min': 300000, '15 min': 900000 };
 
 class SignalTracker {
   constructor(signal, assetPrice, timestamp = Date.now()) {
@@ -1706,7 +1706,7 @@ function validateAISignalOutput(output) {
   output.signals?.forEach((s, i) => {
     if(!['BUY', 'SELL', 'NEUTRAL'].includes(s.direction)) errors.push(`Signal ${i}: Invalid direction "${s.direction}"`);
     if(s.confidence < 41 || s.confidence > 94) errors.push(`Signal ${i}: Confidence must be 41–94, got ${s.confidence}`);
-    if(!s.timeframe || !['30 sec', '1 min', '2 min', '5 min'].includes(s.timeframe)) errors.push(`Signal ${i}: Invalid timeframe`);
+    if(!s.timeframe || !['30 sec', '1 min', '2 min', '5 min', '15 min'].includes(s.timeframe)) errors.push(`Signal ${i}: Invalid timeframe`);
     if(typeof s.reason !== 'string' || s.reason.length === 0) errors.push(`Signal ${i}: Missing reason`);
   });
   
@@ -2279,7 +2279,7 @@ function showSignalAccuracyReport() {
     return;
   }
 
-  const timeframes = ['30 sec', '1 min', '2 min', '5 min'];
+  const timeframes = ['30 sec', '1 min', '2 min', '5 min', '15 min'];
   let report = 'SIGNAL ACCURACY REPORT\n\n';
   
   timeframes.forEach(tf => {
