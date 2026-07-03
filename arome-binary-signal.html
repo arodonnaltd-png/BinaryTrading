@@ -952,7 +952,19 @@ const userSettings = { rsiPeriod:14, emaPeriods:[9,21,50], macdFast:12, macdSlow
 // ═════════════════════════════════════════════════
 const signalHistory = []; // Track all signals & their execution
 const signalTrackerKey = 'arome_signal_tracker';
-const timeframeMs = { '30 sec': 30000, '1 min': 60000, '2 min': 120000, '5 min': 300000, '15 min': 900000 };
+const timeframeMs = {
+  '30 sec': 30000,
+  '1 min': 60000,
+  '2 min': 120000,
+  '5 min': 300000,
+  '15 min': 900000,
+  '1 hour': 3600000,
+  '60 min': 3600000,
+  '1h': 3600000,
+  '4 hour': 14400000,
+  '240 min': 14400000,
+  '4h': 14400000
+};
 
 class SignalTracker {
   constructor(signal, assetPrice, timestamp = Date.now()) {
@@ -1706,7 +1718,7 @@ function validateAISignalOutput(output) {
   output.signals?.forEach((s, i) => {
     if(!['BUY', 'SELL', 'NEUTRAL'].includes(s.direction)) errors.push(`Signal ${i}: Invalid direction "${s.direction}"`);
     if(s.confidence < 41 || s.confidence > 94) errors.push(`Signal ${i}: Confidence must be 41–94, got ${s.confidence}`);
-    if(!s.timeframe || !['30 sec', '1 min', '2 min', '5 min', '15 min'].includes(s.timeframe)) errors.push(`Signal ${i}: Invalid timeframe`);
+    if(!s.timeframe || !['30 sec', '1 min', '2 min', '5 min', '15 min', '1 hour', '60 min', '1h', '4 hour', '240 min', '4h'].includes(s.timeframe)) errors.push(`Signal ${i}: Invalid timeframe`);
     if(typeof s.reason !== 'string' || s.reason.length === 0) errors.push(`Signal ${i}: Missing reason`);
   });
   
@@ -2054,7 +2066,7 @@ RISK LEVELS:
 RULES:
 - Base signals ONLY on above real numbers
 - Shorter timeframes (30s, 1m) weight momentum more
-- Longer timeframes (2m, 5m) weight trend more
+- Longer timeframes (2m, 5m, 15m, 1h, 4h) weight trend more
 - Confluence = higher confidence
 - Conflicting = lower confidence or NEUTRAL
 - Confidence ONLY 41–94 (no round numbers)
@@ -2062,7 +2074,7 @@ RULES:
 - Reject signals if market regime contradicts (e.g., SELL in TRENDING_UP)
 
 Respond ONLY raw JSON:
-{"signals":[{"timeframe":"30 sec","direction":"BUY","confidence":74,"reason":"RSI oversold bounce"},{"timeframe":"1 min","direction":"BUY","confidence":81,"reason":"EMA9/21 bullish"},{"timeframe":"2 min","direction":"BUY","confidence":77,"reason":"BB lower support"},{"timeframe":"5 min","direction":"NEUTRAL","confidence":55,"reason":"Near resistance"}],"summary":"Two sentences with indicator data.","bestTimeframe":"1 min"}`;
+{"signals":[{"timeframe":"30 sec","direction":"BUY","confidence":74,"reason":"RSI oversold bounce"},{"timeframe":"1 min","direction":"BUY","confidence":81,"reason":"EMA9/21 bullish"},{"timeframe":"2 min","direction":"BUY","confidence":77,"reason":"BB lower support"},{"timeframe":"5 min","direction":"NEUTRAL","confidence":55,"reason":"Near resistance"},{"timeframe":"1 hour","direction":"BUY","confidence":68,"reason":"Trend support"}],"summary":"Two sentences with indicator data.","bestTimeframe":"1 hour"}`;
 
       // Step 4: call AI with retry
       let responseText = '';
@@ -2279,7 +2291,7 @@ function showSignalAccuracyReport() {
     return;
   }
 
-  const timeframes = ['30 sec', '1 min', '2 min', '5 min', '15 min'];
+  const timeframes = ['30 sec', '1 min', '2 min', '5 min', '15 min', '1 hour', '4 hour'];
   let report = 'SIGNAL ACCURACY REPORT\n\n';
   
   timeframes.forEach(tf => {
