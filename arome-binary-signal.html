@@ -126,25 +126,47 @@
 
   /* ── MAIN LAYOUT ── */
   .main {
-    display: flex;
+    display: grid;
+    grid-template-columns: 260px minmax(440px, 1fr) 320px;
+    gap: 18px;
     flex: 1;
     overflow: hidden;
+    padding: 20px 24px;
   }
 
   /* ── LEFT SIDEBAR ── */
   .sidebar {
-    width: 220px;
     background: var(--bg2);
-    border-right: 1px solid var(--border);
+    border: 1px solid var(--border);
+    border-radius: 24px;
     display: flex;
     flex-direction: column;
-    flex-shrink: 0;
-    overflow-y: auto;
+    overflow: hidden;
   }
 
   .sidebar-section {
-    padding: 16px;
+    padding: 20px 18px;
     border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-section:last-of-type {
+    border-bottom: none;
+  }
+
+  .panel-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .panel-note {
+    font-size: 10px;
+    color: var(--text2);
+    line-height: 1.6;
   }
 
   .sidebar-label {
@@ -160,34 +182,41 @@
   .asset-list { display: flex; flex-direction: column; gap: 4px; }
 
   .asset-item {
-    padding: 9px 12px;
-    border-radius: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
     border: 1px solid transparent;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.12s ease;
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
   .asset-item:hover { background: var(--bg3); border-color: var(--border); }
   .asset-item.active { background: var(--bg4); border-color: rgba(201,168,76,0.3); }
-
   .asset-name {
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 700;
     color: var(--text);
   }
 
   .asset-sub {
-    font-size: 9px;
-    color: var(--text3);
+    font-size: 10px;
+    color: var(--text2);
     margin-top: 2px;
   }
 
+  .asset-meta { text-align: right; }
+
   .asset-price {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--gold);
-    text-align: right;
+    display: block;
+  }
+
+  .asset-change {
+    font-size: 10px;
+    color: var(--text2);
+    display: block;
   }
 
   .tf-btns { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -208,11 +237,16 @@
 
   .analyze-btn {
     width: 100%;
-    background: linear-gradient(135deg, #c9a84c, #f0c96a);
-    border: none;
+      .sidebar { width: 100%; }
+      .signal-panel { width: 100%; }
     color: #070a0f;
     font-family: 'Syne', sans-serif;
-    font-weight: 800;
+      .main {
+        display: flex;
+        flex-direction: column;
+        overflow: visible;
+        padding: 14px 14px 8px;
+      }
     font-size: 12px;
     letter-spacing: 0.1em;
     padding: 12px;
@@ -228,42 +262,108 @@
 
   /* ── CENTER: CHART ── */
   .center { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
+      .sidebar-label { margin-bottom: 10px; }
   .chart-header {
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 18px;
+      .asset-item { min-width: calc(50% - 8px); }
     display: flex;
-    align-items: center;
-    gap: 16px;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    background: transparent;
+  }
+
+  .market-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    overflow: hidden;
+      .chart-header,
+      .market-card,
+      .center,
+      .statusbar {
+        display: none !important;
+      }
+    border-bottom: 1px solid var(--border);
   }
 
   .chart-asset {
     font-family: 'Syne', sans-serif;
-    font-size: 14px;
+      .market-snapshot { display: none !important; }
+    font-size: 18px;
     font-weight: 800;
     color: var(--text);
   }
 
+  .chart-subtitle {
+    font-size: 10px;
+    color: var(--text2);
+    letter-spacing: 0.12em;
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  .market-status {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
   .chart-price {
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 24px;
+    font-weight: 800;
     color: var(--gold2);
   }
 
   .chart-change {
     font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
+
+  .market-card .chart-wrap {
+    flex: 1;
+    min-height: 320px;
+    border-top: 1px solid var(--border);
+    position: relative;
+  }
+
+  .market-snapshot {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding: 18px 20px 0;
+  }
+
+  .metric-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .metric-label {
+    font-size: 9px;
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .metric-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
   .ch-up { color: var(--buy); background: rgba(0,212,170,0.1); }
   .ch-dn { color: var(--sell); background: rgba(255,83,112,0.1); }
-
-  .chart-wrap {
-    flex: 1;
-    position: relative;
-    min-height: 0;
-  }
 
   #chartDiv { width: 100%; height: 100%; }
 
@@ -283,18 +383,40 @@
 
   /* ── RIGHT: SIGNALS ── */
   .signal-panel {
-    width: 260px;
     background: var(--bg2);
-    border-left: 1px solid var(--border);
+    border: 1px solid var(--border);
+    border-radius: 24px;
     display: flex;
     flex-direction: column;
-    flex-shrink: 0;
-    overflow-y: auto;
+    overflow: hidden;
   }
 
   .sp-header {
-    padding: 14px 16px 10px;
+    padding: 20px 22px 14px;
     border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .signal-pill {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(201,168,76,0.35);
+    color: var(--gold);
+    background: rgba(201,168,76,0.08);
+  }
+
+  .signal-summary {
+    font-size: 10px;
+    color: var(--text2);
+    line-height: 1.5;
+    max-width: 220px;
+    text-align: right;
   }
 
   .sp-title {
@@ -306,7 +428,7 @@
     color: var(--text3);
   }
 
-  .sp-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .sp-body { padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 14px; }
 
   .ov-card {
     background: var(--bg3);
@@ -699,12 +821,12 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-section">
-      <div class="sidebar-label">Assets</div>
+      <div class="panel-title">Assets</div>
       <div class="asset-list" id="assetList"></div>
     </div>
 
     <div class="sidebar-section">
-      <div class="sidebar-label">Timeframe</div>
+      <div class="panel-title">Timeframe</div>
       <div class="tf-btns" id="tfBtns">
         <button class="tf-btn active" data-tf="1">1M</button>
         <button class="tf-btn" data-tf="5">5M</button>
@@ -714,43 +836,85 @@
       </div>
     </div>
 
-    <div class="sidebar-section">
+    <div class="sidebar-section sidebar-footer">
       <button class="analyze-btn" id="analyzeBtn" onclick="runAnalysis()">
         ⚡ Generate Signals
       </button>
+      <div class="panel-note hide-on-mobile">Optimize for fast binary signals with live price action. Mobile view hides chart details to deliver only the essentials.</div>
     </div>
   </aside>
 
+  <style>
+    /* Sticky generate button on mobile */
+    @media (max-width: 680px) {
+      .analyze-btn {
+        position: sticky; bottom: 12px; z-index: 120; width: calc(100% - 28px); margin: 10px 14px; border-radius: 12px;
+      }
+      .sidebar-footer { padding-bottom: 56px; }
+    }
+  </style>
+
   <!-- CENTER CHART -->
-  <div class="center">
-    <div class="chart-header">
-      <span class="chart-asset" id="chartAssetLabel">XAU/USD</span>
-      <span class="chart-price" id="chartPrice">—</span>
-      <span class="chart-change" id="chartChange"></span>
-    </div>
-    <div class="chart-wrap">
-      <div id="chartDiv"></div>
-      <div class="chart-placeholder" id="chartPlaceholder">
-        <div class="placeholder-icon">📈</div>
-        <div class="placeholder-txt">
-          Enter your Twelve Data API key<br>
-          in ⚙ API Keys to load live charts.
+  <section class="center">
+    <div class="market-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-asset" id="chartAssetLabel">XAU/USD</div>
+          <div class="chart-subtitle">Live market view · Real-time Forex quote</div>
+        </div>
+        <div class="market-status">
+          <div class="chart-price" id="chartPrice">—</div>
+          <div class="chart-change" id="chartChange"></div>
+        </div>
+      </div>
+
+      <div class="market-snapshot hide-on-mobile">
+        <div class="metric-card">
+          <div class="metric-label">Trend</div>
+          <div class="metric-value" id="metricTrend">Waiting</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Volatility</div>
+          <div class="metric-value" id="metricVolatility">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Support / Resistance</div>
+          <div class="metric-value" id="metricSR">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">HTF Confluence</div>
+          <div class="metric-value" id="metricConfluence">—</div>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <div id="chartDiv"></div>
+        <div class="chart-placeholder" id="chartPlaceholder">
+          <div class="placeholder-icon">📈</div>
+          <div class="placeholder-txt">
+            Enter your Twelve Data API key<br>
+            in ⚙ API Keys to load live charts.
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
   <!-- SIGNAL PANEL -->
   <aside class="signal-panel">
     <div class="sp-header">
-      <div class="sp-title">Signal Output</div>
+      <div>
+        <div class="sp-title">Signal Output</div>
+        <div class="signal-pill">Binary Options Strategy</div>
+      </div>
+      <div class="signal-summary hide-on-mobile" id="signalSummary">Ready for analysis</div>
     </div>
     <div id="spBody">
       <div class="idle-center">
         <div class="idle-icon-lg">📡</div>
         <div class="idle-txt">
           Select an asset,<br>
-          set timeframe,<br>
+          choose timeframe,<br>
           then click<br>
           ⚡ Generate Signals.
         </div>
@@ -1357,6 +1521,26 @@ function updateStatusBar(){
 }
 updateStatusBar();
 
+function updateDashboardMetrics(ind, marketRegime, mtfAnalysis, bestTimeframe, summary) {
+  const trend = marketRegime?.regime ? marketRegime.regime.replace(/_/g, ' ') : 'Waiting';
+  const vol = marketRegime?.volatility != null ? `${marketRegime.volatility.toFixed(2)}%` : '—';
+  const sr = ind?.support != null && ind?.resistance != null ? `${ind.support.toFixed(ind.price > 10 ? 2 : 5)} / ${ind.resistance.toFixed(ind.price > 10 ? 2 : 5)}` : '—';
+  const confluence = mtfAnalysis ? `${mtfAnalysis.buyConfluence} BUY · ${mtfAnalysis.sellConfluence} SELL` : 'Pending';
+  const summaryText = bestTimeframe && summary ? `${bestTimeframe} · ${summary}` : 'Ready for analysis';
+
+  const trendEl = document.getElementById('metricTrend');
+  const volEl = document.getElementById('metricVolatility');
+  const srEl = document.getElementById('metricSR');
+  const conEl = document.getElementById('metricConfluence');
+  const summaryEl = document.getElementById('signalSummary');
+
+  if(trendEl) trendEl.textContent = trend;
+  if(volEl) volEl.textContent = vol;
+  if(srEl) srEl.textContent = sr;
+  if(conEl) conEl.textContent = confluence;
+  if(summaryEl) summaryEl.textContent = summaryText;
+}
+
 /* ── ASSET LIST ── */
 function buildAssetList(){
   const list = document.getElementById('assetList');
@@ -1366,7 +1550,10 @@ function buildAssetList(){
         <div class="asset-name">${a.sym}</div>
         <div class="asset-sub">${a.sub}</div>
       </div>
-      <div class="asset-price" id="price-${i}">—</div>
+      <div class="asset-meta">
+        <div class="asset-price" id="price-${i}">—</div>
+        <div class="asset-change" id="change-${i}">—</div>
+      </div>
     </div>`).join('');
 }
 buildAssetList();
@@ -2008,6 +2195,10 @@ async function loadChart() {
 
     const idx = ASSETS.findIndex(a=>a.sym===currentAsset.sym);
     if(idx>=0) document.getElementById('price-'+idx).textContent = last.close.toFixed(last.close>100?2:5);
+    if(idx>=0) {
+      const chEl = document.getElementById('change-'+idx);
+      if(chEl) chEl.textContent = (chg>0?'+':'')+chg+'%';
+    }
 
     return candles;
 
@@ -2065,6 +2256,7 @@ async function runAnalysis(){
     const riskLevels = calculateRiskLevels(ind.price, ind.atr);
     const dp = ind.price > 10 ? 2 : 5;
 
+    let mtfAnalysis = null;
     // Step 3: TURBO MODE or AI MODE
     let p = null;
     
@@ -2075,7 +2267,7 @@ async function runAnalysis(){
     } else {
       // AI-based analysis with multi-timeframe confirmation (uses server-side proxy)
       body.innerHTML = `<div class="loading-center"><div class="spin-ring"></div><div class="loading-lbl">Analyzing multi-timeframe confluence…</div></div>`;
-      const mtfAnalysis = await analyzeMultiTimeframe(currentAsset, candles, currentTf);
+      mtfAnalysis = await analyzeMultiTimeframe(currentAsset, candles, currentTf);
       
       // Build enhanced prompt with ALL real data
       body.innerHTML = `<div class="loading-center"><div class="spin-ring"></div><div class="loading-lbl">Running AI analysis…</div></div>`;
@@ -2251,6 +2443,8 @@ Respond ONLY raw JSON:
         ${riskPanel ? `<div class="hide-on-mobile">${riskPanel}</div>` : ''}
         ${indPanel ? `<div class="hide-on-mobile">${indPanel}</div>` : ''}
       </div>`;
+
+    updateDashboardMetrics(ind, marketRegime, mtfAnalysis, p.bestTimeframe, p.summary);
 
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
       body.querySelectorAll('.conf-fill').forEach(el=>{ el.style.width = el.dataset.w+'%'; });
