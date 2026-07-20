@@ -628,11 +628,45 @@
     .signal-panel { width: 220px; }
   }
   @media (max-width: 680px) {
-    .main { flex-direction: column; overflow: auto; }
-    .sidebar { width: 100%; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--border); }
-    .sidebar-section { border-bottom: none; border-right: 1px solid var(--border); flex-shrink: 0; }
-    .signal-panel { width: 100%; border-left: none; border-top: 1px solid var(--border); }
-    .chart-wrap { height: 320px; flex: none; }
+    .main { flex-direction: column; overflow: hidden; }
+    .nav { padding: 0 14px; }
+    .nav-right { display: none; }
+    .sidebar {
+      width: 100%;
+      flex-direction: column;
+      overflow: visible;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-section {
+      border-bottom: 1px solid var(--border);
+      border-right: none;
+      padding: 14px 14px 10px;
+    }
+    .sidebar-section:last-of-type { border-bottom: none; }
+    .sidebar-label { margin-bottom: 10px; }
+    .asset-list { flex-wrap: wrap; gap: 8px; }
+    .asset-item { min-width: calc(50% - 8px); }
+    .tf-btns { justify-content: flex-start; flex-wrap: wrap; }
+    .tf-btn { flex: 1 1 42%; }
+    .analyze-btn { width: 100%; }
+    .signal-panel {
+      width: 100%;
+      border-left: none;
+      border-top: 1px solid var(--border);
+    }
+    .chart-header,
+    .chart-wrap,
+    .statusbar {
+      display: none;
+    }
+    .signal-panel { order: 2; }
+    .sidebar { order: 1; }
+    .center { order: 3; }
+    .chart-wrap { display: none !important; }
+    .chart-header { display: none !important; }
+    .sidebar-section:not(:first-of-type) { padding-top: 10px; }
+    body { min-height: 100vh; }
   }
 </style>
 </head>
