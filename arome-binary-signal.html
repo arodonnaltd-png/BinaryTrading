@@ -1633,17 +1633,16 @@ function getRiskBasedLotSize(entryPrice, stopLoss, accountBalance, riskPercent) 
 /* ─ 4. MULTI-TIMEFRAME CONFLUENCE ─ */
 async function analyzeMultiTimeframe(asset, baseCandles, baseTf) {
   try {
-    const timeframes = ['1', '5', '15'];
+    const timeframes = ['1', '5', '15', '60', '240'];
+    const intervalMap = {'1':'1min','5':'5min','15':'15min','60':'1h','240':'4h'};
     const results = { [baseTf]: analyzeCandles(baseCandles) };
-    
+
     for(const tf of timeframes) {
       if(tf === baseTf) continue;
-      const intervalMap = {'1':'1min','5':'5min','15':'15min','60':'1h','240':'4h'};
       const params = new URLSearchParams({ symbol: asset.tdSym, interval: intervalMap[tf], outputsize: 100 });
       
       const res = await fetchWithRetry(`/api/twelvedata?${params}`);
       const data = await res.json();
-      // Rate limit: add 500ms delay between API calls
       await new Promise(r => setTimeout(r, 500));
       
       if(data.values && data.values.length > 50) {
@@ -1658,11 +1657,21 @@ async function analyzeMultiTimeframe(asset, baseCandles, baseTf) {
       }
     }
     
-    // Calculate confluence score
-    const buyConfluence = Object.values(results).filter(r => r.emaUptrend && r.macdBullish).length;
-    const sellConfluence = Object.values(results).filter(r => r.emaDowntrend && r.macdBearish).length;
-    
-    return { results, buyConfluence, sellConfluence, totalTimeframes: Object.keys(results).length };
+    const buyConfluence = Object.entries(results).filter(([,r]) => r.emaUptrend && r.macdBullish).length;
+    const sellConfluence = Object.entries(results).filter(([,r]) => r.emaDowntrend && r.macdBearish).length;
+    const htfTrend = ['60','240'].map(tf => {
+      const r = results[tf];
+      if(!r) return null;
+      if(r.emaUptrend && r.macdBullish) return 'UP';
+      if(r.emaDowntrend && r.macdBearish) return 'DOWN';
+      return 'NEUTRAL';
+    }).filter(Boolean);
+    const htfSummary = htfTrend.length > 0 ? htfTrend.reduce((acc, val) => {
+      acc[val] = (acc[val] || 0) + 1;
+      return acc;
+    }, {}) : {};
+
+    return { results, buyConfluence, sellConfluence, totalTimeframes: Object.keys(results).length, htfSummary };
   } catch(err) {
     console.warn('Multi-timeframe analysis failed:', err);
     return null;
@@ -2071,7 +2080,7 @@ async function runAnalysis(){
       // Build enhanced prompt with ALL real data
       body.innerHTML = `<div class="loading-center"><div class="spin-ring"></div><div class="loading-lbl">Running AI analysis…</div></div>`;
 
-      const mtfContext = mtfAnalysis ? `\n\nMULTI-TIMEFRAME CONFLUENCE:\n- Buy signals across timeframes: ${mtfAnalysis.buyConfluence}/${mtfAnalysis.totalTimeframes}\n- Sell signals across timeframes: ${mtfAnalysis.sellConfluence}/${mtfAnalysis.totalTimeframes}` : '';
+      const mtfContext = mtfAnalysis ? `\n\nMULTI-TIMEFRAME CONFLUENCE:\n- Buy signals across timeframes: ${mtfAnalysis.buyConfluence}/${mtfAnalysis.totalTimeframes}\n- Sell signals across timeframes: ${mtfAnalysis.sellConfluence}/${mtfAnalysis.totalTimeframes}\n- Higher-timeframe trend: ${mtfAnalysis.htfSummary.UP||0} UP / ${mtfAnalysis.htfSummary.DOWN||0} DOWN / ${mtfAnalysis.htfSummary.NEUTRAL||0} NEUTRAL` : '';
 
       const prompt = `You are a professional binary options trading signal engine.
 
