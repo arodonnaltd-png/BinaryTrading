@@ -628,7 +628,7 @@
     .signal-panel { width: 220px; }
   }
   @media (max-width: 680px) {
-    .main { flex-direction: column; overflow: hidden; }
+    .main { flex-direction: column; overflow: auto; }
     .nav { padding: 0 14px; }
     .nav-right { display: none; }
     .sidebar {
@@ -656,6 +656,8 @@
       width: 100%;
       border-left: none;
       border-top: 1px solid var(--border);
+      overflow: auto;
+      max-height: calc(100vh - 220px);
     }
     .chart-header,
     .chart-wrap,
