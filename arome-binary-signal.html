@@ -456,9 +456,11 @@
   .tf-card {
     background: var(--bg3);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 11px 13px;
+    border-radius: 12px;
+    padding: 14px 16px;
     animation: slideIn 0.35s ease both;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+    transition: transform 160ms ease, box-shadow 160ms ease;
   }
   @keyframes slideIn { from{opacity:0;transform:translateX(10px)} to{opacity:1;transform:translateX(0)} }
 
@@ -500,10 +502,9 @@
 
   .conf-row { display: flex; align-items: center; gap: 8px; }
   .conf-track { flex: 1; height: 3px; background: var(--bg); border-radius: 2px; overflow: hidden; }
-  .conf-fill { height: 100%; border-radius: 2px; transition: width 1.1s cubic-bezier(0.22,1,0.36,1); }
+  .conf-fill { height: 100%; border-radius: 2px; transition: width 1.1s cubic-bezier(0.22,1,0.36,1); will-change: width; }
   .conf-pct { font-size: 10px; color: var(--text2); min-width: 30px; text-align: right; }
-
-  .tf-reason { font-size: 9px; color: var(--text3); margin-top: 7px; letter-spacing: 0.04em; line-height: 1.5; }
+  .tf-reason { font-size: 10px; color: var(--text3); margin-top: 8px; letter-spacing: 0.03em; line-height: 1.4; max-height:3.2em; overflow:hidden; text-overflow:ellipsis; }
 
   .sum-box {
     background: rgba(201,168,76,0.05);
@@ -2220,10 +2221,12 @@ async function runAnalysis(){
   const body = document.getElementById('spBody');
   btn.disabled = true;
   body.innerHTML = `<div class="loading-center"><div class="spin-ring"></div><div class="loading-lbl">Fetching live data…</div></div>`;
+  updateDashboardMetrics(null, {regime:'WAITING', volatility:0}, null, null, 'Fetching live data…');
 
   try {
     // Step 1: fetch candles with retry logic
     body.innerHTML = `<div class="loading-center"><div class="spin-ring"></div><div class="loading-lbl">Loading candles…</div></div>`;
+    updateDashboardMetrics(null, {regime:'WAITING', volatility:0}, null, null, 'Loading candles…');
     
     const intervalMap = {'1':'1min','5':'5min','15':'15min','60':'1h','240':'4h'};
     const interval = intervalMap[currentTf] || '1min';
@@ -2251,8 +2254,10 @@ async function runAnalysis(){
 
     // Step 2: calculate real indicators and market regime
     body.innerHTML = `<div class="loading-center"><div class="spin-ring"></div><div class="loading-lbl">Calculating indicators…</div></div>`;
+    updateDashboardMetrics(null, {regime:'CALC', volatility:0}, null, null, 'Calculating indicators…');
     const ind = analyzeCandles(candles);
     const marketRegime = detectMarketRegime(candles);
+    updateDashboardMetrics(ind, marketRegime, null, null, 'Indicators calculated');
     const riskLevels = calculateRiskLevels(ind.price, ind.atr);
     const dp = ind.price > 10 ? 2 : 5;
 
@@ -2264,6 +2269,7 @@ async function runAnalysis(){
       // Pure technical - no AI
       body.innerHTML = `<div class="loading-center"><div class="spin-ring"></div><div class="loading-lbl">Turbo mode analysis…</div></div>`;
       p = generateTurboSignals(ind, marketRegime);
+      updateDashboardMetrics(ind, marketRegime, null, p.bestTimeframe, p.summary);
     } else {
       // AI-based analysis with multi-timeframe confirmation (uses server-side proxy)
       body.innerHTML = `<div class="loading-center"><div class="spin-ring"></div><div class="loading-lbl">Analyzing multi-timeframe confluence…</div></div>`;
@@ -2271,6 +2277,7 @@ async function runAnalysis(){
       
       // Build enhanced prompt with ALL real data
       body.innerHTML = `<div class="loading-center"><div class="spin-ring"></div><div class="loading-lbl">Running AI analysis…</div></div>`;
+      updateDashboardMetrics(ind, marketRegime, mtfAnalysis, null, 'Running AI analysis…');
 
       const mtfContext = mtfAnalysis ? `\n\nMULTI-TIMEFRAME CONFLUENCE:\n- Buy signals across timeframes: ${mtfAnalysis.buyConfluence}/${mtfAnalysis.totalTimeframes}\n- Sell signals across timeframes: ${mtfAnalysis.sellConfluence}/${mtfAnalysis.totalTimeframes}\n- Higher-timeframe trend: ${mtfAnalysis.htfSummary.UP||0} UP / ${mtfAnalysis.htfSummary.DOWN||0} DOWN / ${mtfAnalysis.htfSummary.NEUTRAL||0} NEUTRAL` : '';
 
