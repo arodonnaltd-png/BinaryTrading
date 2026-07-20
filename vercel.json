@@ -1,6 +1,6 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
+  "buildCommand": "echo 'Static HTML app — no build step required'",
+  "outputDirectory": ".",
   "cleanUrls": false,
   "routes": [
     {
@@ -10,7 +10,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/arome-binary-signal.html"
     }
   ]
 }
