@@ -651,12 +651,15 @@
     .tf-btn { flex: 1 1 42%; }
     .analyze-btn { width: 100%; }
     .signal-panel {
+      display: flex;
+      flex-direction: column;
       width: 100%;
       border-left: none;
       border-top: 1px solid var(--border);
     }
     .chart-header,
     .chart-wrap,
+    .center,
     .statusbar {
       display: none;
     }
@@ -666,6 +669,9 @@
     .chart-wrap { display: none !important; }
     .chart-header { display: none !important; }
     .sidebar-section:not(:first-of-type) { padding-top: 10px; }
+    .hide-on-mobile { display: none !important; }
+    .sp-body { padding: 12px 14px; }
+    .sp-header { padding: 14px 14px 10px; }
     body { min-height: 100vh; }
   }
 </style>
@@ -2229,10 +2235,10 @@ Respond ONLY raw JSON:
           <div class="ov-sub">${turboMode?'Turbo Mode':'AI Analysis'} · ${currentAsset.sym}</div>
         </div>
         ${rows}
-        <div class="sum-box"><div class="sum-txt">${p.summary}</div></div>
-        ${accuracyPanel}
-        ${riskPanel}
-        ${indPanel}
+        <div class="sum-box hide-on-mobile"><div class="sum-txt">${p.summary}</div></div>
+        ${accuracyPanel ? `<div class="hide-on-mobile">${accuracyPanel}</div>` : ''}
+        ${riskPanel ? `<div class="hide-on-mobile">${riskPanel}</div>` : ''}
+        ${indPanel ? `<div class="hide-on-mobile">${indPanel}</div>` : ''}
       </div>`;
 
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
