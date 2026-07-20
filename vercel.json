@@ -1,6 +1,6 @@
 {
-  "buildCommand": "echo 'Static site with serverless API'",
-  "outputDirectory": ".",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "cleanUrls": false,
   "routes": [
     {
@@ -10,7 +10,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/arome-binary-signal.html"
+      "dest": "/index.html"
     }
   ]
 }
