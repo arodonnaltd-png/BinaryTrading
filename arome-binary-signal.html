@@ -855,6 +855,26 @@
     }
   </style>
 
+  <style>
+    /* Test helper: simulate mobile by adding 'force-mobile' to body */
+    body.force-mobile .main {
+      display: flex;
+      flex-direction: column;
+      overflow: visible;
+      padding: 14px 14px 8px;
+    }
+    body.force-mobile .nav-right { display: none; }
+    body.force-mobile .market-card,
+    body.force-mobile .chart-header,
+    body.force-mobile .chart-wrap,
+    body.force-mobile .market-snapshot,
+    body.force-mobile .statusbar { display: none !important; }
+    body.force-mobile .signal-panel,
+    body.force-mobile .sidebar { width: 100%; display: block; }
+    body.force-mobile .hide-on-mobile { display: none !important; }
+    body.force-mobile .analyze-btn { position: sticky; bottom: 12px; z-index:120; width: calc(100% - 28px); margin: 10px 14px; }
+  </style>
+
   <!-- CENTER CHART -->
   <section class="center">
     <div class="market-card">
@@ -1540,6 +1560,35 @@ function updateDashboardMetrics(ind, marketRegime, mtfAnalysis, bestTimeframe, s
   if(srEl) srEl.textContent = sr;
   if(conEl) conEl.textContent = confluence;
   if(summaryEl) summaryEl.textContent = summaryText;
+}
+
+/* Test helper: verify mobile-only view shows essentials
+   Run `verifyMobileView()` in the browser console to simulate mobile and get results. */
+function verifyMobileView(showOverlay = true) {
+  const el = document.documentElement;
+  document.body.classList.add('force-mobile');
+  const isVisible = e => {
+    if(!e) return false;
+    const s = window.getComputedStyle(e);
+    return s.display !== 'none' && s.visibility !== 'hidden' && e.offsetParent !== null;
+  };
+  const results = {
+    chartVisible: isVisible(document.querySelector('.market-card')),
+    signalPanelVisible: isVisible(document.querySelector('.signal-panel')),
+    sidebarVisible: isVisible(document.querySelector('.sidebar')),
+    analyzeButtonVisible: isVisible(document.getElementById('analyzeBtn')),
+  };
+  document.body.classList.remove('force-mobile');
+
+  if(showOverlay) {
+    const o = document.createElement('div');
+    o.style.position='fixed'; o.style.right='12px'; o.style.top='12px'; o.style.zIndex=9999;
+    o.style.background='rgba(13,17,23,0.95)'; o.style.color='#e8edf5'; o.style.padding='10px 14px'; o.style.borderRadius='10px';
+    o.style.fontSize='12px'; o.innerText = 'Mobile test: ' + JSON.stringify(results);
+    document.body.appendChild(o);
+    setTimeout(()=>o.remove(), 4000);
+  }
+  return results;
 }
 
 /* ── ASSET LIST ── */
