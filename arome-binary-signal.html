@@ -237,16 +237,8 @@
 
   .analyze-btn {
     width: 100%;
-      .sidebar { width: 100%; }
-      .signal-panel { width: 100%; }
     color: #070a0f;
     font-family: 'Syne', sans-serif;
-      .main {
-        display: flex;
-        flex-direction: column;
-        overflow: visible;
-        padding: 14px 14px 8px;
-      }
     font-size: 12px;
     letter-spacing: 0.1em;
     padding: 12px;
@@ -751,15 +743,16 @@
     .signal-panel { width: 220px; }
   }
   @media (max-width: 680px) {
-    .main { flex-direction: column; overflow: auto; }
+    .main { flex-direction: column; overflow: hidden; }
     .nav { padding: 0 14px; }
     .nav-right { display: none; }
     .sidebar {
       width: 100%;
       flex-direction: column;
-      overflow: visible;
+      overflow: hidden;
       border-right: none;
       border-bottom: 1px solid var(--border);
+      max-height: calc(100vh - 170px);
     }
     .sidebar-section {
       border-bottom: 1px solid var(--border);
@@ -768,9 +761,21 @@
     }
     .sidebar-section:last-of-type { border-bottom: none; }
     .sidebar-label { margin-bottom: 10px; }
-    .asset-list { flex-wrap: wrap; gap: 8px; }
+    .asset-list {
+      flex-wrap: wrap;
+      gap: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
     .asset-item { min-width: calc(50% - 8px); }
-    .tf-btns { justify-content: flex-start; flex-wrap: wrap; }
+    .tf-btns {
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      max-height: 108px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
     .tf-btn { flex: 1 1 42%; }
     .analyze-btn { width: 100%; }
     .signal-panel {
@@ -779,8 +784,13 @@
       width: 100%;
       border-left: none;
       border-top: 1px solid var(--border);
-      overflow: auto;
-      max-height: calc(100vh - 220px);
+      overflow: hidden;
+      max-height: calc(100vh - 170px);
+    }
+    .signal-panel .sp-body {
+      overflow-y: auto;
+      max-height: calc(100vh - 310px);
+      padding: 12px 14px;
     }
     .chart-header,
     .chart-wrap,
@@ -849,9 +859,16 @@
     /* Sticky generate button on mobile */
     @media (max-width: 680px) {
       .analyze-btn {
-        position: sticky; bottom: 12px; z-index: 120; width: calc(100% - 28px); margin: 10px 14px; border-radius: 12px;
+        position: sticky;
+        bottom: 12px;
+        z-index: 120;
+        width: calc(100% - 28px);
+        margin: 10px 14px;
+        border-radius: 12px;
       }
-      .sidebar-footer { padding-bottom: 56px; }
+      .sidebar-footer {
+        padding-bottom: 80px;
+      }
     }
   </style>
 
