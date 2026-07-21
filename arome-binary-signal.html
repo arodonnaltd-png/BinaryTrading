@@ -2016,20 +2016,40 @@ function calculateSharpeRatio(trades, riskFreeRate = 0.02) {
 /* ─ 6. JSON SCHEMA VALIDATION & SANITY CHECKS ─ */
 function validateAISignalOutput(output) {
   const errors = [];
-  
+
+  // Helper: normalize many common timeframe representations to canonical strings
+  function normalizeTimeframe(tf) {
+    if(!tf && tf !== 0) return null;
+    const t = String(tf).toLowerCase().trim().replace(/[-_]/g, ' ').replace(/chart/g, '').replace(/\./g, '').trim();
+
+    if(/^30\s*(s(ec(ond)?s?)?)?$/.test(t)) return '30 sec';
+    if(/^1\s*(m(in(ute)?s?)?)?$/.test(t) || /^1h$/.test(t) && t === '1') return '1 min';
+    if(/^2\s*(m(in(ute)?s?)?)?$/.test(t)) return '2 min';
+    if(/^5\s*(m(in(ute)?s?)?|m)?$/.test(t) || /^5min$/.test(t) || /^5m$/.test(t)) return '5 min';
+    if(/^15\s*(m(in(ute)?s?)?)?$/.test(t) || /^15min$/.test(t) || /^15m$/.test(t)) return '15 min';
+    if(/^1\s*(h(our)?s?)?$/.test(t) || /^60\s*m(in(ute)?s?)?$/.test(t) || /^1h$/.test(t)) return '1 hour';
+    if(/^4\s*(h(our)?s?)?$/.test(t) || /^240\s*m(in(ute)?s?)?$/.test(t) || /^4h$/.test(t)) return '4 hour';
+
+    return null;
+  }
+
   if(!output.signals || !Array.isArray(output.signals)) errors.push('Missing or invalid signals array');
-  if(output.signals.length === 0) errors.push('Empty signals array');
-  
+  if(output.signals && output.signals.length === 0) errors.push('Empty signals array');
+
   output.signals?.forEach((s, i) => {
     if(!['BUY', 'SELL', 'NEUTRAL'].includes(s.direction)) errors.push(`Signal ${i}: Invalid direction "${s.direction}"`);
-    if(s.confidence < 41 || s.confidence > 94) errors.push(`Signal ${i}: Confidence must be 41–94, got ${s.confidence}`);
-    if(!s.timeframe || !['30 sec', '1 min', '2 min', '5 min', '15 min', '1 hour', '60 min', '1h', '4 hour', '240 min', '4h'].includes(s.timeframe)) errors.push(`Signal ${i}: Invalid timeframe`);
+    if(typeof s.confidence !== 'number' || s.confidence < 41 || s.confidence > 94) errors.push(`Signal ${i}: Confidence must be 41–94, got ${s.confidence}`);
+
+    const normTf = normalizeTimeframe(s.timeframe);
+    if(!normTf) errors.push(`Signal ${i}: Invalid timeframe "${s.timeframe}"`);
+    else s.timeframe = normTf; // normalize in-place for downstream use
+
     if(typeof s.reason !== 'string' || s.reason.length === 0) errors.push(`Signal ${i}: Missing reason`);
   });
-  
+
   if(!output.summary || typeof output.summary !== 'string') errors.push('Missing or invalid summary');
   if(!output.bestTimeframe) errors.push('Missing bestTimeframe');
-  
+
   return { valid: errors.length === 0, errors, sanitized: errors.length === 0 ? output : null };
 }
 
